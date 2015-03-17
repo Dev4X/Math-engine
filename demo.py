@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python2
 from Tkinter import *
 import random
 
@@ -15,6 +15,7 @@ class User(object):
     def __init__(self):
 # 2.) Create a user class with answer matrix for each operator (10x10 to start)
 # 9.) We can use this matrix to do ML & work with the engine later on
+# @TODO CRUD matrix
         self.n = 10
         self.matrix = [[0 for x in xrange(self.n)] for y in xrange(self.n)]
 
@@ -44,6 +45,7 @@ def checkAnswer(canvas, side):
         canvas.data.user.matrix[row][col] += 1
     else:
         canvas.data.user.matrix[row][col] -= 1
+    print canvas.data.user.matrix
     return
 
 def redrawAll(canvas):
@@ -89,9 +91,9 @@ def generateRandoms(canvas):
     random3 = random.random()
 # 7.) Generate answer, display right answer as well as one wrong answer
     answer = random1 + random2
-    nonAnswer = random.randint(0,n-1)
+    nonAnswer = random.randint(0,(2*n)-1)
     while(nonAnswer == answer):
-        nonAnswer = random.randint(0,n-1)
+        nonAnswer = random.randint(0,(2*n)-1)
     return random1, random2, answer, nonAnswer, random3
 
 def randomAssign(canvas):
@@ -104,6 +106,7 @@ def randomAssign(canvas):
         answerLeft = nonAnswer
         answerRight = answer
         answer = "right"
+        #@TODO threshold of score to unlock numerals
     shapesLeft = [Shape((x*canvas.data.width/3)/(random1+1),((x+1)*canvas.data.height)/2/(random1+1)) for x in xrange(random1)]
     shapesRight = [Shape(canvas.data.width*(2.0/3)+(x*canvas.data.width/3)/(random2+1),((x+1)*canvas.data.height)/2/(random2+1)) for x in xrange(random2)]
     shapesAnswerLeft = [Shape((x*canvas.data.width/2)/(answerLeft+1),(canvas.data.height/2)+((x+1)*canvas.data.height)/2/(answerLeft+1)) for x in xrange(answerLeft)]
