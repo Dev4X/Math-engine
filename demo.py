@@ -1,5 +1,3 @@
-# 8.) if user selects right answer, row*col of operator matrix is +1, else -1
-# 9.) We can use this matrix to do ML & work with the engine later on
 
 from Tkinter import *
 import random
@@ -16,8 +14,9 @@ class Operator(object):
 class User(object):
     def __init__(self):
 # 2.) Create a user class with answer matrix for each operator (10x10 to start)
+# 9.) We can use this matrix to do ML & work with the engine later on
         self.n = 10
-        matrix = [[0 for x in xrange(self.n)] for y in xrange(self.n)]
+        self.matrix = [[0 for x in xrange(self.n)] for y in xrange(self.n)]
 
 class Shape(object):
 # 1.) Using Python & Tkinter, create a simple shape class.
@@ -32,10 +31,20 @@ def mousePressed(canvas, event):
     canvas.data.mouseX = event.x
     canvas.data.mouseY = event.y
     if(canvas.data.mouseX < canvas.data.width / 2):
-        print "Right!"
+        checkAnswer(canvas, "left")
     else:
-        print "Try again"
+        checkAnswer(canvas, "right")
     redrawAll(canvas)
+
+def checkAnswer(canvas, side):
+# 8.) if user selects right answer, row*col of operator matrix is +1, else -1
+    row = len(canvas.data.shapesLeft)
+    col = len(canvas.data.shapesRight)
+    if(side == canvas.data.answerSide):
+        canvas.data.user.matrix[row][col] += 1
+    else:
+        canvas.data.user.matrix[row][col] -= 1
+    return
 
 def redrawAll(canvas):
     canvas.delete(ALL)
@@ -44,7 +53,7 @@ def redrawAll(canvas):
     canvas.create_rectangle((2*canvas.data.width)/3,0,canvas.data.width,canvas.data.height/2,outline="red",fill="white")
     canvas.create_rectangle(0,canvas.data.height/2,canvas.data.width/2,canvas.data.height,outline="red",fill="blue")
     canvas.create_rectangle(canvas.data.width/2,canvas.data.height/2,canvas.data.width,canvas.data.height,outline="red",fill="green")
-    randomAssign(canvas)
+    canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = randomAssign(canvas)
     canvas.data.operator.drawPlus(canvas)
 
 def run():
@@ -69,27 +78,42 @@ def init(canvas):
     canvas.data.user = User()
     canvas.data.operator = Operator(canvas)
     canvas.data.operator.drawPlus(canvas)
-    randomAssign(canvas)
+    canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = randomAssign(canvas)
 
-def randomAssign(canvas):
+def generateRandoms(canvas):
 # 4.) Randomly select row from matrix, generate that many shapes on left of operator.
 # 5.) Randomly select col from matrix, generate that many shapes on right of operator
     n = canvas.data.user.n
     random1 = random.randint(0,n-1)
     random2 = random.randint(0,n-1)
+    random3 = random.random()
 # 7.) Generate answer, display right answer as well as one wrong answer
     answer = random1 + random2
     nonAnswer = random.randint(0,n-1)
     while(nonAnswer == answer):
         nonAnswer = random.randint(0,n-1)
+    return random1, random2, answer, nonAnswer, random3
+
+def randomAssign(canvas):
+    random1, random2, answer, nonAnswer, random3 = generateRandoms(canvas)
+    if(random3 > .5):
+        answerLeft = answer
+        answerRight = nonAnswer
+        answer = "left"
+    else:
+        answerLeft = nonAnswer
+        answerRight = answer
+        answer = "right"
     shapesLeft = [Shape((x*canvas.data.width/3)/(random1+1),((x+1)*canvas.data.height)/2/(random1+1)) for x in xrange(random1)]
     shapesRight = [Shape(canvas.data.width*(2.0/3)+(x*canvas.data.width/3)/(random2+1),((x+1)*canvas.data.height)/2/(random2+1)) for x in xrange(random2)]
-    shapesAnswer = [Shape((x*canvas.data.width/2)/(answer+1),(canvas.data.height/2)+((x+1)*canvas.data.height)/2/(answer+1)) for x in xrange(answer)]
-    shapesNonAnswer = [Shape(canvas.data.width*(2.0/3)+(x*canvas.data.width/3)/(nonAnswer+1),canvas.data.height/2+((x+1)*canvas.data.height)/2/(nonAnswer+1)) for x in xrange(nonAnswer)]
+    shapesAnswerLeft = [Shape((x*canvas.data.width/2)/(answerLeft+1),(canvas.data.height/2)+((x+1)*canvas.data.height)/2/(answerLeft+1)) for x in xrange(answerLeft)]
+    shapesAnswerRight = [Shape(canvas.data.width*(1.0/2)+(x*canvas.data.width/2)/(answerRight+1),canvas.data.height/2+((x+1)*canvas.data.height)/2/(answerRight+1)) for x in xrange(answerRight)]
     drawShapesList(canvas, shapesRight)
     drawShapesList(canvas, shapesLeft)
-    drawShapesList(canvas, shapesAnswer)
-    drawShapesList(canvas, shapesNonAnswer)
+    drawShapesList(canvas, shapesAnswerLeft)
+    drawShapesList(canvas, shapesAnswerRight)
+    return shapesLeft, shapesRight, answer
+
 
 def drawShapesList(canvas, shapesList):
     for shape in shapesList:
