@@ -3,6 +3,8 @@ from Tkinter import *
 import random
 
 class Operator(object):
+    #@TODO other operators
+    #@TODO classes extend operator?
     def __init__(self, canvas):
         self.x = canvas.data.width / 2
         self.y = canvas.data.height / 4
@@ -11,13 +13,18 @@ class Operator(object):
         canvas.create_line(self.x-20,self.y,self.x+20,self.y, fill="black",width=10)
         canvas.create_line(self.x,self.y-20,self.x,self.y+20, fill="black",width=10)
 
+    def drawMinus(self,canvas):
+        canvas.create_line(self.x-20,self.y,self.x+20,self.y, fill="black",width=10)
+
 class User(object):
     def __init__(self):
 # 2.) Create a user class with answer matrix for each operator (10x10 to start)
 # 9.) We can use this matrix to do ML & work with the engine later on
 # @TODO CRUD matrix
+#@TODO level?
         self.n = 10
         self.matrix = [[0 for x in xrange(self.n)] for y in xrange(self.n)]
+        self.score = 0
 
 class Shape(object):
 # 1.) Using Python & Tkinter, create a simple shape class.
@@ -26,6 +33,7 @@ class Shape(object):
         self.x, self.y = x, y
 
     def draw(self,canvas):
+        #@TODO other shapes?
         canvas.create_oval(self.x,self.y,self.x2,self.y2, fill="orange")
 
 def mousePressed(canvas, event):
@@ -43,11 +51,11 @@ def checkAnswer(canvas, side):
     col = len(canvas.data.shapesRight)
     if(side == canvas.data.answerSide):
         canvas.data.user.matrix[row][col] += 1
+        canvas.data.user.score += 1
         correct = 1
-        #@TODO smiley feedback
-        #@TODO comparing against next answer, not previous
     else:
         canvas.data.user.matrix[row][col] -= 1
+        canvas.data.user.score -= 1
         correct = 0
     return correct
 
@@ -64,14 +72,15 @@ def drawSmiley(canvas,correct):
 
 def redrawAll(canvas,correct):
     canvas.delete(ALL)
-    canvas.create_rectangle(0,0,canvas.data.width / 3, canvas.data.height / 2,outline="red",fill="white")
-    canvas.create_rectangle(canvas.data.width / 3,0,(2*canvas.data.width) / 3,canvas.data.height / 2,outline="green",fill="white")
-    canvas.create_rectangle((2*canvas.data.width)/3,0,canvas.data.width,canvas.data.height/2,outline="red",fill="white")
-    canvas.create_rectangle(0,canvas.data.height/2,canvas.data.width/2,canvas.data.height,outline="red",fill="blue")
-    canvas.create_rectangle(canvas.data.width/2,canvas.data.height/2,canvas.data.width,canvas.data.height,outline="red",fill="green")
+    canvas.create_rectangle(0,0,canvas.data.width / 3, canvas.data.height / 2,outline="white",fill="white")
+    canvas.create_rectangle(canvas.data.width / 3,0,(2*canvas.data.width) / 3,canvas.data.height / 2,outline="white",fill="white")
+    canvas.create_rectangle((2*canvas.data.width)/3,0,canvas.data.width,canvas.data.height/2,outline="white",fill="white")
+    canvas.create_rectangle(0,canvas.data.height/2,canvas.data.width/2,canvas.data.height,fill="blue")
+    canvas.create_rectangle(canvas.data.width/2,canvas.data.height/2,canvas.data.width,canvas.data.height,fill="green")
     canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = randomAssign(canvas)
     canvas.data.operator.drawPlus(canvas)
     drawSmiley(canvas, correct)
+    canvas.create_text(10,10,anchor='nw',text=canvas.data.user.score,fill="black")
 
 def run():
     root = Tk()
