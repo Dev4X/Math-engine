@@ -32,10 +32,10 @@ def mousePressed(canvas, event):
     canvas.data.mouseX = event.x
     canvas.data.mouseY = event.y
     if(canvas.data.mouseX < canvas.data.width / 2):
-        checkAnswer(canvas, "left")
+        correct = checkAnswer(canvas, "left")
     else:
-        checkAnswer(canvas, "right")
-    redrawAll(canvas)
+        correct = checkAnswer(canvas, "right")
+    redrawAll(canvas, correct)
 
 def checkAnswer(canvas, side):
 # 8.) if user selects right answer, row*col of operator matrix is +1, else -1
@@ -43,12 +43,26 @@ def checkAnswer(canvas, side):
     col = len(canvas.data.shapesRight)
     if(side == canvas.data.answerSide):
         canvas.data.user.matrix[row][col] += 1
+        correct = 1
+        #@TODO smiley feedback
+        #@TODO comparing against next answer, not previous
     else:
         canvas.data.user.matrix[row][col] -= 1
-    print canvas.data.user.matrix
-    return
+        correct = 0
+    return correct
 
-def redrawAll(canvas):
+def drawSmiley(canvas,correct):
+    # eyes
+    canvas.create_oval((canvas.data.width/2)-15,(3*canvas.data.height/8)-15,(canvas.data.width/2)-8,(3*canvas.data.height/8)-8,fill='black')
+    canvas.create_oval((canvas.data.width/2)+15,(3*canvas.data.height/8)-15,(canvas.data.width/2)+8,(3*canvas.data.height/8)-8,fill='black')
+    # mouth logic
+    if(correct == 1):
+        canvas.create_arc((canvas.data.width/2)-15,(3*canvas.data.height/8)+25,(canvas.data.width/2)+15,(3*canvas.data.height/8)+10,start=180,extent=180,width=2,outline="black")
+    else:
+        canvas.create_arc((canvas.data.width/2)-15,(3*canvas.data.height/8)+25,(canvas.data.width/2)+15,(3*canvas.data.height/8)+10,start=0,extent=180,width=2,outline="black")
+    return canvas
+
+def redrawAll(canvas,correct):
     canvas.delete(ALL)
     canvas.create_rectangle(0,0,canvas.data.width / 3, canvas.data.height / 2,outline="red",fill="white")
     canvas.create_rectangle(canvas.data.width / 3,0,(2*canvas.data.width) / 3,canvas.data.height / 2,outline="green",fill="white")
@@ -57,6 +71,7 @@ def redrawAll(canvas):
     canvas.create_rectangle(canvas.data.width/2,canvas.data.height/2,canvas.data.width,canvas.data.height,outline="red",fill="green")
     canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = randomAssign(canvas)
     canvas.data.operator.drawPlus(canvas)
+    drawSmiley(canvas, correct)
 
 def run():
     root = Tk()
@@ -72,15 +87,9 @@ def run():
     root.mainloop()
 
 def init(canvas):
-    canvas.create_rectangle(0,0,canvas.data.width / 3, canvas.data.height / 2,outline="red",fill="white")
-    canvas.create_rectangle(canvas.data.width / 3,0,(2*canvas.data.width) / 3,canvas.data.height / 2,outline="green",fill="white")
-    canvas.create_rectangle((2*canvas.data.width)/3,0,canvas.data.width,canvas.data.height/2,outline="red",fill="white")
-    canvas.create_rectangle(0,canvas.data.height/2,canvas.data.width/2,canvas.data.height,outline="red",fill="blue")
-    canvas.create_rectangle(canvas.data.width/2,canvas.data.height/2,canvas.data.width,canvas.data.height,outline="red",fill="green")
     canvas.data.user = User()
     canvas.data.operator = Operator(canvas)
-    canvas.data.operator.drawPlus(canvas)
-    canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = randomAssign(canvas)
+    redrawAll(canvas,1)
 
 def generateRandoms(canvas):
 # 4.) Randomly select row from matrix, generate that many shapes on left of operator.
@@ -116,7 +125,6 @@ def randomAssign(canvas):
     drawShapesList(canvas, shapesAnswerLeft)
     drawShapesList(canvas, shapesAnswerRight)
     return shapesLeft, shapesRight, answer
-
 
 def drawShapesList(canvas, shapesList):
     for shape in shapesList:
