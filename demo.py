@@ -124,15 +124,15 @@ def randomAssign(canvas):
         answerLeft = nonAnswer
         answerRight = answer
         answer = "right"
-    if(canvas.data.user.score < 5):
-        shapesLeft, shapesRight, answer = buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight)
-        return shapesLeft, shapesRight, answer
-    else:
-        drawNumerals(canvas,random1,random2,answer,nonAnswer)
+    shapesLeft, shapesRight, answer = buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight)
+    return shapesLeft, shapesRight, answer
         #@TODO threshold of score to unlock numerals
 
-def drawNumerals(canvas,random1,random2,answer,nonAnswer):
-    canvas.create_text((canvas.data.width/6),(canvas.data.height/4),anchor='nw')
+def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
+    canvas.create_text((canvas.data.width/4),(canvas.data.height/4),anchor='center',text=random1,fill='black',font="Arial 45")
+    canvas.create_text((3*canvas.data.width/4),(canvas.data.height/4),anchor='center',text=random2,fill='black',font="Arial 45")
+    canvas.create_text((canvas.data.width/4),(3*canvas.data.height/4),anchor='center',text=answerLeft,fill='black',font="Arial 45")
+    canvas.create_text((3*canvas.data.width/4),(3*canvas.data.height/4),anchor='center',text=answerRight,fill='black',font="Arial 45")
     return
 
 def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
@@ -140,10 +140,13 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
     shapesRight = [Shape(canvas.data.width*(2.0/3)+(x*canvas.data.width/3)/(random2+1),((x+1)*canvas.data.height)/2/(random2+1)) for x in xrange(random2)]
     shapesAnswerLeft = [Shape((x*canvas.data.width/2)/(answerLeft+1),(canvas.data.height/2)+((x+1)*canvas.data.height)/2/(answerLeft+1)) for x in xrange(answerLeft)]
     shapesAnswerRight = [Shape(canvas.data.width*(1.0/2)+(x*canvas.data.width/2)/(answerRight+1),canvas.data.height/2+((x+1)*canvas.data.height)/2/(answerRight+1)) for x in xrange(answerRight)]
-    drawShapesList(canvas, shapesRight)
-    drawShapesList(canvas, shapesLeft)
-    drawShapesList(canvas, shapesAnswerLeft)
-    drawShapesList(canvas, shapesAnswerRight)
+    if(canvas.data.user.score < 5):
+        drawShapesList(canvas, shapesRight)
+        drawShapesList(canvas, shapesLeft)
+        drawShapesList(canvas, shapesAnswerLeft)
+        drawShapesList(canvas, shapesAnswerRight)
+    else:
+        drawNumerals(canvas,random1,random2,answerLeft,answerRight)
     return shapesLeft, shapesRight, answer
 
 def drawShapesList(canvas, shapesList):
