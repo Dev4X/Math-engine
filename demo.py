@@ -124,7 +124,18 @@ def randomAssign(canvas):
         answerLeft = nonAnswer
         answerRight = answer
         answer = "right"
+    if(canvas.data.user.score < 5):
+        shapesLeft, shapesRight, answer = buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight)
+        return shapesLeft, shapesRight, answer
+    else:
+        drawNumerals(canvas,random1,random2,answer,nonAnswer)
         #@TODO threshold of score to unlock numerals
+
+def drawNumerals(canvas,random1,random2,answer,nonAnswer):
+    canvas.create_text((canvas.data.width/6),(canvas.data.height/4),anchor='nw')
+    return
+
+def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
     shapesLeft = [Shape((x*canvas.data.width/3)/(random1+1),((x+1)*canvas.data.height)/2/(random1+1)) for x in xrange(random1)]
     shapesRight = [Shape(canvas.data.width*(2.0/3)+(x*canvas.data.width/3)/(random2+1),((x+1)*canvas.data.height)/2/(random2+1)) for x in xrange(random2)]
     shapesAnswerLeft = [Shape((x*canvas.data.width/2)/(answerLeft+1),(canvas.data.height/2)+((x+1)*canvas.data.height)/2/(answerLeft+1)) for x in xrange(answerLeft)]
