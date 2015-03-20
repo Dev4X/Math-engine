@@ -2,9 +2,10 @@
 from Tkinter import *
 import random
 
+COLORS=['blue','green','red','yellow','gray','black','white','orange']
 class Operator(object):
-    #@TODO other operators
-    #@TODO classes extend operator?
+    #TODO other operators
+    #TODO classes extend operator?
     def __init__(self, canvas):
         self.x = canvas.data.width / 2
         self.y = canvas.data.height / 4
@@ -20,8 +21,8 @@ class User(object):
     def __init__(self):
 # 2.) Create a user class with answer matrix for each operator (10x10 to start)
 # 9.) We can use this matrix to do ML & work with the engine later on
-# @TODO CRUD matrix
-#@TODO level?
+# TODO CRUD matrix
+#TODO level?
         self.n = 10
         self.matrix = [[0 for x in xrange(self.n)] for y in xrange(self.n)]
         self.score = 0
@@ -33,8 +34,10 @@ class Shape(object):
         self.x, self.y = x, y
 
     def draw(self,canvas):
-        #@TODO other shapes?
-        canvas.create_oval(self.x,self.y,self.x2,self.y2, fill="orange")
+        #TODO other shapes?
+        #color=COLORS[random.randint(0,len(COLORS)-1)]
+        color=COLORS[2]
+        canvas.create_oval(self.x,self.y,self.x2,self.y2, fill=color)
 
 def mousePressed(canvas, event):
     canvas.data.mouseX = event.x
@@ -61,24 +64,36 @@ def checkAnswer(canvas, side):
 
 def drawSmiley(canvas,correct):
     # eyes
-    canvas.create_oval((canvas.data.width/2)-15,(3*canvas.data.height/8)-15,(canvas.data.width/2)-8,(3*canvas.data.height/8)-8,fill='black')
-    canvas.create_oval((canvas.data.width/2)+15,(3*canvas.data.height/8)-15,(canvas.data.width/2)+8,(3*canvas.data.height/8)-8,fill='black')
+    canvas.create_oval((canvas.data.width/2)-15,(5*canvas.data.height/8)-15,\
+            (canvas.data.width/2)-8,(5*canvas.data.height/8)-8,fill='white')
+    canvas.create_oval((canvas.data.width/2)+15,(5*canvas.data.height/8)-15,\
+            (canvas.data.width/2)+8,(5*canvas.data.height/8)-8,fill='white')
     # mouth logic
     if(correct == 1):
-        canvas.create_arc((canvas.data.width/2)-15,(3*canvas.data.height/8)+25,(canvas.data.width/2)+15,(3*canvas.data.height/8)+10,start=180,extent=180,width=2,outline="black")
+        canvas.create_arc((canvas.data.width/2)-15,(5*canvas.data.height/8)+25,\
+                (canvas.data.width/2)+15,(5*canvas.data.height/8)+10,\
+                start=180,extent=180,width=2,outline="white",fill="white")
     else:
-        canvas.create_arc((canvas.data.width/2)-15,(3*canvas.data.height/8)+25,(canvas.data.width/2)+15,(3*canvas.data.height/8)+10,start=0,extent=180,width=2,outline="black")
+        canvas.create_arc((canvas.data.width/2)-15,(5*canvas.data.height/8)+25,\
+                (canvas.data.width/2)+15,(5*canvas.data.height/8)+10,\
+                start=0,extent=180,width=2,outline="white",fill="white")
     return canvas
 
 def redrawAll(canvas,correct):
     canvas.delete(ALL)
-    # @TODO change colors of squares?
-    canvas.create_rectangle(0,0,canvas.data.width / 3, canvas.data.height / 2,outline="white",fill="white")
-    canvas.create_rectangle(canvas.data.width / 3,0,(2*canvas.data.width) / 3,canvas.data.height / 2,outline="white",fill="white")
-    canvas.create_rectangle((2*canvas.data.width)/3,0,canvas.data.width,canvas.data.height/2,outline="white",fill="white")
-    canvas.create_rectangle(0,canvas.data.height/2,canvas.data.width/2,canvas.data.height,fill="blue")
-    canvas.create_rectangle(canvas.data.width/2,canvas.data.height/2,canvas.data.width,canvas.data.height,fill="green")
-    canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = randomAssign(canvas)
+    # TODO change colors of squares?
+    canvas.create_rectangle(0,0,canvas.data.width / 3, canvas.data.height / 2,\
+            outline="white",fill="white")
+    canvas.create_rectangle(canvas.data.width / 3,0,(2*canvas.data.width) / 3,\
+            canvas.data.height / 2,outline="white",fill="white")
+    canvas.create_rectangle((2*canvas.data.width)/3,0,canvas.data.width,\
+            canvas.data.height/2,outline="white",fill="white")
+    canvas.create_rectangle(0,canvas.data.height/2,canvas.data.width/2,\
+            canvas.data.height,fill="blue")
+    canvas.create_rectangle(canvas.data.width/2,canvas.data.height/2,\
+            canvas.data.width,canvas.data.height,fill="green")
+    canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = \
+            randomAssign(canvas)
     canvas.data.operator.drawPlus(canvas)
     drawSmiley(canvas, correct)
     canvas.create_text(10,10,anchor='nw',text=canvas.data.user.score,fill="black")
@@ -125,14 +140,19 @@ def randomAssign(canvas):
         answerLeft = nonAnswer
         answerRight = answer
         answer = "right"
-    shapesLeft, shapesRight, answer = buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight)
+    shapesLeft, shapesRight, answer = \
+            buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight)
     return shapesLeft, shapesRight, answer
 
 def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
-    canvas.create_text((canvas.data.width/4),(canvas.data.height/4),anchor='center',text=random1,fill='black',font="Arial 45")
-    canvas.create_text((3*canvas.data.width/4),(canvas.data.height/4),anchor='center',text=random2,fill='black',font="Arial 45")
-    canvas.create_text((canvas.data.width/4),(3*canvas.data.height/4),anchor='center',text=answerLeft,fill='black',font="Arial 45")
-    canvas.create_text((3*canvas.data.width/4),(3*canvas.data.height/4),anchor='center',text=answerRight,fill='black',font="Arial 45")
+    canvas.create_text((canvas.data.width/4),(canvas.data.height/4),\
+            anchor='center',text=random1,fill='black',font="Arial 45")
+    canvas.create_text((3*canvas.data.width/4),(canvas.data.height/4),\
+            anchor='center',text=random2,fill='black',font="Arial 45")
+    canvas.create_text((canvas.data.width/4),(3*canvas.data.height/4),\
+            anchor='center',text=answerLeft,fill='black',font="Arial 45")
+    canvas.create_text((3*canvas.data.width/4),(3*canvas.data.height/4),\
+            anchor='center',text=answerRight,fill='black',font="Arial 45")
     return
 
 def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
@@ -155,6 +175,8 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
         drawShapesList(canvas, shapesLeft)
         drawShapesList(canvas, shapesAnswerLeft)
         drawShapesList(canvas, shapesAnswerRight)
+        #TODO hybrid between pictures & numbers
+        #TODO match numbers with pictures
     else:
         drawNumerals(canvas,random1,random2,answerLeft,answerRight)
     return shapesLeft, shapesRight, answer
