@@ -72,6 +72,7 @@ def drawSmiley(canvas,correct):
 
 def redrawAll(canvas,correct):
     canvas.delete(ALL)
+    # @TODO change colors of squares?
     canvas.create_rectangle(0,0,canvas.data.width / 3, canvas.data.height / 2,outline="white",fill="white")
     canvas.create_rectangle(canvas.data.width / 3,0,(2*canvas.data.width) / 3,canvas.data.height / 2,outline="white",fill="white")
     canvas.create_rectangle((2*canvas.data.width)/3,0,canvas.data.width,canvas.data.height/2,outline="white",fill="white")
@@ -126,7 +127,6 @@ def randomAssign(canvas):
         answer = "right"
     shapesLeft, shapesRight, answer = buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight)
     return shapesLeft, shapesRight, answer
-        #@TODO threshold of score to unlock numerals
 
 def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
     canvas.create_text((canvas.data.width/4),(canvas.data.height/4),anchor='center',text=random1,fill='black',font="Arial 45")
@@ -136,10 +136,20 @@ def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
     return
 
 def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
-    shapesLeft = [Shape((x*canvas.data.width/3)/(random1+1),((x+1)*canvas.data.height)/2/(random1+1)) for x in xrange(random1)]
-    shapesRight = [Shape(canvas.data.width*(2.0/3)+(x*canvas.data.width/3)/(random2+1),((x+1)*canvas.data.height)/2/(random2+1)) for x in xrange(random2)]
-    shapesAnswerLeft = [Shape((x*canvas.data.width/2)/(answerLeft+1),(canvas.data.height/2)+((x+1)*canvas.data.height)/2/(answerLeft+1)) for x in xrange(answerLeft)]
-    shapesAnswerRight = [Shape(canvas.data.width*(1.0/2)+(x*canvas.data.width/2)/(answerRight+1),canvas.data.height/2+((x+1)*canvas.data.height)/2/(answerRight+1)) for x in xrange(answerRight)]
+    # not efficient to build list, then check for usage or not
+    shapesLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
+            ,((x*canvas.data.height)/4/(random1))+(canvas.data.height/10)) \
+            for x in xrange(random1)]
+    shapesRight = [Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
+            ,((x*canvas.data.height)/4/(random2))+(canvas.data.height/10)) \
+            for x in xrange(random2)]
+    shapesAnswerRight =[Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
+            ,((x*canvas.data.height)/4/(answerRight))+(2.0*canvas.data.height/3)) \
+            for x in xrange(answerRight)]
+    shapesAnswerLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
+            ,((x*canvas.data.height)/4/(answerLeft))+(2.0*canvas.data.height/3)) \
+            for x in xrange(answerLeft)]
+    # threshold of score to unlock numerals
     if(canvas.data.user.score < 5):
         drawShapesList(canvas, shapesRight)
         drawShapesList(canvas, shapesLeft)
