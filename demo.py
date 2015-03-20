@@ -2,7 +2,7 @@
 from Tkinter import *
 import random
 
-COLORS=['blue','green','red','yellow','gray','black','white','orange']
+COLORS=['blue','green','red','yellow','gray','white','orange']
 class Operator(object):
     #TODO other operators
     #TODO classes extend operator?
@@ -22,7 +22,6 @@ class User(object):
 # 2.) Create a user class with answer matrix for each operator (10x10 to start)
 # 9.) We can use this matrix to do ML & work with the engine later on
 #TODO CRUD matrix
-#TODO level?
         self.n = 10
         self.matrix = [[0 for x in xrange(self.n)] for y in xrange(self.n)]
         self.score = 0
@@ -68,18 +67,18 @@ def drawSmiley(canvas,correct):
     canvas.create_rectangle((canvas.data.width/2)-25,(5*canvas.data.height/8)-25,\
             (canvas.data.width/2)+25,(5*canvas.data.height/8)+35,fill=color)
     canvas.create_oval((canvas.data.width/2)-15,(5*canvas.data.height/8)-15,\
-            (canvas.data.width/2)-8,(5*canvas.data.height/8)-8,fill='white')
+            (canvas.data.width/2)-8,(5*canvas.data.height/8)-8,fill='black')
     canvas.create_oval((canvas.data.width/2)+15,(5*canvas.data.height/8)-15,\
-            (canvas.data.width/2)+8,(5*canvas.data.height/8)-8,fill='white')
+            (canvas.data.width/2)+8,(5*canvas.data.height/8)-8,fill='black')
     # mouth logic
     if(correct == 1):
         canvas.create_arc((canvas.data.width/2)-15,(5*canvas.data.height/8)+25,\
                 (canvas.data.width/2)+15,(5*canvas.data.height/8)+10,\
-                start=180,extent=180,width=1,outline="black",fill="white")
+                start=180,extent=180,width=1,outline="black",fill="black")
     else:
         canvas.create_arc((canvas.data.width/2)-15,(5*canvas.data.height/8)+25,\
                 (canvas.data.width/2)+15,(5*canvas.data.height/8)+10,\
-                start=0,extent=180,width=1,outline="black",fill="white")
+                start=0,extent=180,width=1,outline="black",fill="black")
     return canvas
 
 def redrawAll(canvas,correct):
@@ -148,6 +147,11 @@ def randomAssign(canvas):
             buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight)
     return shapesLeft, shapesRight, answer
 
+def drawNumeral(canvas,x1,y1,text):
+    canvas.create_text(x1,y1,\
+            anchor='center',text=text,fill='black',font="Arial 45")
+    return
+
 def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
     canvas.create_text((canvas.data.width/4),(canvas.data.height/4),\
             anchor='center',text=random1,fill='black',font="Arial 45")
@@ -174,13 +178,25 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
             ,((x*canvas.data.height)/4/(answerLeft))+(2.0*canvas.data.height/3)) \
             for x in xrange(answerLeft)]
     # threshold of score to unlock numerals
-    if(canvas.data.user.score < 5):
+    if(canvas.data.user.score < 10):
         drawShapesList(canvas, shapesRight)
         drawShapesList(canvas, shapesLeft)
         drawShapesList(canvas, shapesAnswerLeft)
         drawShapesList(canvas, shapesAnswerRight)
-        #TODO hybrid between pictures & numbers
+        #TODO hybrid between pictures & numbers (answers)
         #TODO match numbers with pictures
+    elif(canvas.data.user.score < 30):
+        random1 = random.random()
+        if(random1 >= .5):
+            drawShapesList(canvas, shapesRight)
+            drawShapesList(canvas, shapesAnswerLeft)
+            drawShapesList(canvas, shapesAnswerRight)
+            drawNumeral(canvas,canvas.data.width/4,canvas.data.height/4,len(shapesLeft))
+        else:
+            drawShapesList(canvas, shapesLeft)
+            drawShapesList(canvas, shapesAnswerLeft)
+            drawShapesList(canvas, shapesAnswerRight)
+            drawNumeral(canvas,3*canvas.data.width/4,canvas.data.height/4,len(shapesRight))
     else:
         drawNumerals(canvas,random1,random2,answerLeft,answerRight)
     return shapesLeft, shapesRight, answer
