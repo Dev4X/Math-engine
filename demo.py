@@ -2,7 +2,9 @@
 from Tkinter import *
 import random
 
+# GLOBALS
 COLORS=['blue','green','red','yellow','gray','white','orange']
+
 class Operator(object):
     #TODO other operators
     #TODO classes extend operator?
@@ -34,7 +36,6 @@ class Shape(object):
 
     def draw(self,canvas):
         #TODO other shapes?
-        #color=COLORS[random.randint(0,len(COLORS)-1)]
         color="black"
         canvas.create_oval(self.x,self.y,self.x2,self.y2, fill=color)
 
@@ -49,9 +50,11 @@ def mousePressed(canvas, event):
 
 def checkAnswer(canvas, side):
 # 8.) if user selects right answer, row*col of operator matrix is +1, else -1
+    #TODO BUG FROM SIMPLE SELECTION
     row = len(canvas.data.shapesLeft)
     col = len(canvas.data.shapesRight)
     if(side == canvas.data.answerSide):
+        #TODO more complex matrix scoring
         canvas.data.user.matrix[row][col] += 1
         canvas.data.user.score += 1
         correct = 1
@@ -97,7 +100,6 @@ def redrawAll(canvas,correct):
             canvas.data.width,canvas.data.height,fill=color1)
     canvas.data.shapesLeft, canvas.data.shapesRight, canvas.data.answerSide = \
             randomAssign(canvas)
-    canvas.data.operator.drawPlus(canvas)
     drawSmiley(canvas, correct)
     canvas.create_text(10,10,anchor='nw',text=canvas.data.user.score,fill="black")
 
@@ -165,6 +167,7 @@ def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
 
 def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
     # not efficient to build list, then check for usage or not
+    #TODO move scoring logic outside this function
     shapesLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
             ,((x*canvas.data.height)/4/(random1))+(canvas.data.height/10)) \
             for x in xrange(random1)]
@@ -178,14 +181,32 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
             ,((x*canvas.data.height)/4/(answerLeft))+(2.0*canvas.data.height/3)) \
             for x in xrange(answerLeft)]
     # threshold of score to unlock numerals
+#    if(canvas.data.user.score < 5):
+#        #   generate 2 numbers
+#        #   one dot pattern
+#        #   match
+#        drawShapesList(canvas, shapesLeft)
+#        drawNumeral(canvas,canvas.data.width/4,3*canvas.data.height/4,len(shapesLeft))
+#        drawNumeral(canvas,3*canvas.data.width/4,3*canvas.data.height/4,len(shapesRight))
+#    elif(canvas.data.user.score < 8):
+#        #TODO hybrid between pictures & numbers (answers)
+#        #TODO match numbers with pictures
+#        #   1. generate one number
+#        #   do not draw operator
+#        #   instead draw in operator's place
+#        #   can use same answer code
+#        #   2. generate 2 dot patterns
+#        #   3. match them
+#        drawNumeral(canvas,canvas.data.width/4,canvas.data.height/4,len(shapesLeft))
+#        drawShapesList(canvas, shapesAnswerLeft)
+#        drawShapesList(canvas, shapesAnswerRight)
     if(canvas.data.user.score < 10):
         drawShapesList(canvas, shapesRight)
         drawShapesList(canvas, shapesLeft)
         drawShapesList(canvas, shapesAnswerLeft)
         drawShapesList(canvas, shapesAnswerRight)
-        #TODO hybrid between pictures & numbers (answers)
-        #TODO match numbers with pictures
-    elif(canvas.data.user.score < 30):
+        canvas.data.operator.drawPlus(canvas)
+    elif(canvas.data.user.score < 15):
         random1 = random.random()
         if(random1 >= .5):
             drawShapesList(canvas, shapesRight)
@@ -197,8 +218,10 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
             drawShapesList(canvas, shapesAnswerLeft)
             drawShapesList(canvas, shapesAnswerRight)
             drawNumeral(canvas,3*canvas.data.width/4,canvas.data.height/4,len(shapesRight))
+        canvas.data.operator.drawPlus(canvas)
     else:
         drawNumerals(canvas,random1,random2,answerLeft,answerRight)
+        canvas.data.operator.drawPlus(canvas)
     return shapesLeft, shapesRight, answer
 
 def drawShapesList(canvas, shapesList):
