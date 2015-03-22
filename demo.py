@@ -1,21 +1,19 @@
 #!/usr/bin/env python2
 from Tkinter import *
 import random
+import subprocess
 
 # GLOBALS
 COLORS=['blue','green','red','yellow','gray','white','orange']
 
 class Operator(object):
-    #TODO other operators
-    #TODO classes extend operator?
     def __init__(self, canvas):
         self.x = canvas.data.width / 2
         self.y = canvas.data.height / 4
 
 class Plus(Operator):
     def __init__(self, canvas):
-        self.x = canvas.data.width / 2
-        self.y = canvas.data.height / 4
+        Operator.__init__(self, canvas)
 
     def draw(self, canvas):
         canvas.create_line(self.x-20,self.y,self.x+20,self.y, fill="black",width=10)
@@ -23,8 +21,7 @@ class Plus(Operator):
 
 class Minus(Operator):
     def __init__(self, canvas):
-        self.x = canvas.data.width / 2
-        self.y = canvas.data.height / 4
+        Operator.__init__(self, canvas)
 
     def draw(self, canvas):
         canvas.create_line(self.x-20,self.y,self.x+20,self.y, fill="black",width=10)
@@ -33,9 +30,8 @@ class User(object):
     def __init__(self):
 # 2.) Create a user class with answer matrix for each operator (10x10 to start)
 # 9.) We can use this matrix to do ML & work with the engine later on
-#TODO CRUD matrix
         self.n = 10
-        self.matrix = [[0 for x in xrange(self.n)] for y in xrange(self.n)]
+        self.matrix = [[[0,0] for x in xrange(self.n)] for y in xrange(self.n)]
         self.score = 0
 
 class Shape(object):
@@ -45,7 +41,6 @@ class Shape(object):
         self.x, self.y = x, y
 
     def draw(self,canvas):
-        #TODO other shapes?
         rand = random.random()
         color="black"
         if(rand > .5):
@@ -64,7 +59,13 @@ def mousePressed(canvas, event):
         canvas.data.adding = True
     else:
         canvas.data.adding = False
+    writeMatrix(canvas)
     redrawAll(canvas, correct)
+
+def writeMatrix(canvas):
+#TODO CRUD matrix
+    matrix = open('matrix', 'w+')
+    print >>matrix, canvas.data.user.matrix
 
 def checkAnswer(canvas, side):
 # 8.) if user selects right answer, row*col of operator matrix is +1, else -1
@@ -73,11 +74,17 @@ def checkAnswer(canvas, side):
     col = len(canvas.data.shapesRight)
     if(side == canvas.data.answerSide):
         #TODO more complex matrix scoring
-        canvas.data.user.matrix[row][col] += 1
+        if(canvas.data.adding == 1):
+            canvas.data.user.matrix[row][col][0] += 1
+        else:
+            canvas.data.user.matrix[row][col][1] += 1
         canvas.data.user.score += 1
         correct = 1
     else:
-        canvas.data.user.matrix[row][col] -= 1
+        if(canvas.data.adding == 1):
+            canvas.data.user.matrix[row][col][0] -= 1
+        else:
+            canvas.data.user.matrix[row][col][1] -= 1
         canvas.data.user.score -= 1
         correct = 0
     return correct
@@ -157,7 +164,6 @@ def generateRandoms(canvas):
     random2 = random.randint(0,n-1)
     random3 = random.random()
 # 7.) Generate answer, display right answer as well as one wrong answer
-#TODO minus logic goes here
     answer, canvas = checkAdditionOrSubtraction(canvas, random1, random2)
     nonAnswer = random.randint(0,(2*n)-1)
     while(nonAnswer == answer):
