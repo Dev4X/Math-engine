@@ -12,11 +12,21 @@ class Operator(object):
         self.x = canvas.data.width / 2
         self.y = canvas.data.height / 4
 
-    def drawPlus(self,canvas):
+class Plus(Operator):
+    def __init__(self, canvas):
+        self.x = canvas.data.width / 2
+        self.y = canvas.data.height / 4
+
+    def draw(self, canvas):
         canvas.create_line(self.x-20,self.y,self.x+20,self.y, fill="black",width=10)
         canvas.create_line(self.x,self.y-20,self.x,self.y+20, fill="black",width=10)
 
-    def drawMinus(self,canvas):
+class Minus(Operator):
+    def __init__(self, canvas):
+        self.x = canvas.data.width / 2
+        self.y = canvas.data.height / 4
+
+    def draw(self, canvas):
         canvas.create_line(self.x-20,self.y,self.x+20,self.y, fill="black",width=10)
 
 class User(object):
@@ -36,8 +46,12 @@ class Shape(object):
 
     def draw(self,canvas):
         #TODO other shapes?
+        rand = random.random()
         color="black"
-        canvas.create_oval(self.x,self.y,self.x2,self.y2, fill=color)
+        if(rand > .5):
+            canvas.create_oval(self.x,self.y,self.x2,self.y2, fill=color)
+        else:
+            canvas.create_rectangle(self.x,self.y,self.x2,self.y2, fill=color)
 
 def mousePressed(canvas, event):
     canvas.data.mouseX = event.x
@@ -46,6 +60,10 @@ def mousePressed(canvas, event):
         correct = checkAnswer(canvas, "left")
     else:
         correct = checkAnswer(canvas, "right")
+    if(random.random() > .5):
+        canvas.data.adding = True
+    else:
+        canvas.data.adding = False
     redrawAll(canvas, correct)
 
 def checkAnswer(canvas, side):
@@ -116,9 +134,19 @@ def run():
     root.bind("<Button-1>", f)
     root.mainloop()
 
+def checkAdditionOrSubtraction(canvas, random1, random2):
+    if(canvas.data.adding == 1):
+        canvas.data.operator = Plus(canvas)
+        answer = random1 + random2
+    else:
+        canvas.data.operator = Minus(canvas)
+        answer = max(random1,random2) - min(random1,random2)
+    return answer, canvas
+
 def init(canvas):
     canvas.data.user = User()
-    canvas.data.operator = Operator(canvas)
+    canvas.data.adding = True
+    canvas.data.operator = Plus(canvas)
     redrawAll(canvas,1)
 
 def generateRandoms(canvas):
@@ -129,7 +157,8 @@ def generateRandoms(canvas):
     random2 = random.randint(0,n-1)
     random3 = random.random()
 # 7.) Generate answer, display right answer as well as one wrong answer
-    answer = random1 + random2
+#TODO minus logic goes here
+    answer, canvas = checkAdditionOrSubtraction(canvas, random1, random2)
     nonAnswer = random.randint(0,(2*n)-1)
     while(nonAnswer == answer):
         nonAnswer = random.randint(0,(2*n)-1)
@@ -168,18 +197,27 @@ def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
 def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
     # not efficient to build list, then check for usage or not
     #TODO move scoring logic outside this function
-    shapesLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
-            ,((x*canvas.data.height)/4/(random1))+(canvas.data.height/10)) \
-            for x in xrange(random1)]
-    shapesRight = [Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
-            ,((x*canvas.data.height)/4/(random2))+(canvas.data.height/10)) \
-            for x in xrange(random2)]
     shapesAnswerRight =[Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
             ,((x*canvas.data.height)/4/(answerRight))+(2.0*canvas.data.height/3)) \
             for x in xrange(answerRight)]
     shapesAnswerLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
             ,((x*canvas.data.height)/4/(answerLeft))+(2.0*canvas.data.height/3)) \
             for x in xrange(answerLeft)]
+    if(canvas.data.adding == 1):
+        shapesLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
+                ,((x*canvas.data.height)/4/(random1))+(canvas.data.height/10)) \
+                for x in xrange(random1)]
+        shapesRight = [Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
+                ,((x*canvas.data.height)/4/(random2))+(canvas.data.height/10)) \
+                for x in xrange(random2)]
+    else:
+        shapesLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
+                ,((x*canvas.data.height)/4/(max(random1,random2)))+(canvas.data.height/10)) \
+                for x in xrange(max(random1,random2))]
+        shapesRight = [Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
+                ,((x*canvas.data.height)/4/(min(random2,random1)))+(canvas.data.height/10)) \
+                for x in xrange(min(random2,random1))]
+
     # threshold of score to unlock numerals
 #    if(canvas.data.user.score < 5):
 #        #   generate 2 numbers
@@ -205,7 +243,7 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
         drawShapesList(canvas, shapesLeft)
         drawShapesList(canvas, shapesAnswerLeft)
         drawShapesList(canvas, shapesAnswerRight)
-        canvas.data.operator.drawPlus(canvas)
+        canvas.data.operator.draw(canvas)
     elif(canvas.data.user.score < 15):
         random1 = random.random()
         if(random1 >= .5):
@@ -218,10 +256,10 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
             drawShapesList(canvas, shapesAnswerLeft)
             drawShapesList(canvas, shapesAnswerRight)
             drawNumeral(canvas,3*canvas.data.width/4,canvas.data.height/4,len(shapesRight))
-        canvas.data.operator.drawPlus(canvas)
+        canvas.data.operator.draw(canvas)
     else:
         drawNumerals(canvas,random1,random2,answerLeft,answerRight)
-        canvas.data.operator.drawPlus(canvas)
+        canvas.data.operator.draw(canvas)
     return shapesLeft, shapesRight, answer
 
 def drawShapesList(canvas, shapesList):
