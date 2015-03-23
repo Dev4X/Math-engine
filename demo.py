@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 from Tkinter import *
 import random
-import subprocess
 
 # GLOBALS
 COLORS=['blue','green','red','yellow','gray','white','orange']
@@ -31,6 +30,7 @@ class User(object):
 # 2.) Create a user class with answer matrix for each operator (10x10 to start)
 # 9.) We can use this matrix to do ML & work with the engine later on
         self.n = 10
+        #TODO auth & read in matrix
         self.matrix = [[[0,0] for x in xrange(self.n)] for y in xrange(self.n)]
         self.score = 0
 
@@ -41,12 +41,11 @@ class Shape(object):
         self.x, self.y = x, y
 
     def draw(self,canvas):
-        rand = random.random()
         color="black"
-        if(rand > .5):
-            canvas.create_oval(self.x,self.y,self.x2,self.y2, fill=color)
-        else:
-            canvas.create_rectangle(self.x,self.y,self.x2,self.y2, fill=color)
+   #     if(random.random() > .5):
+        canvas.create_oval(self.x,self.y,self.x2,self.y2, fill=color)
+   #     else:
+    #        canvas.create_rectangle(self.x,self.y,self.x2,self.y2, fill=color)
 
 def mousePressed(canvas, event):
     canvas.data.mouseX = event.x
@@ -72,6 +71,12 @@ def checkAnswer(canvas, side):
     #TODO BUG FROM SIMPLE SELECTION
     row = len(canvas.data.shapesLeft)
     col = len(canvas.data.shapesRight)
+    if(canvas.data.singleTop == True):
+        print canvas.data.answerSide
+        if(len(canvas.data.shapesLeft) == len(canvas.data.shapesAnswerLeft)):
+            canvas.data.answerSide = "left"
+        else:
+            canvas.data.answerSide = "right"
     if(side == canvas.data.answerSide):
         #TODO more complex matrix scoring
         if(canvas.data.adding == 1):
@@ -151,6 +156,7 @@ def checkAdditionOrSubtraction(canvas, random1, random2):
     return answer, canvas
 
 def init(canvas):
+    canvas.data.singleTop = True
     canvas.data.user = User()
     canvas.data.adding = True
     canvas.data.operator = Plus(canvas)
@@ -190,6 +196,8 @@ def drawNumeral(canvas,x1,y1,text):
     return
 
 def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
+    if(canvas.data.adding == 0):
+        random1, random2 = max(random1, random2), min(random1, random2)
     canvas.create_text((canvas.data.width/4),(canvas.data.height/4),\
             anchor='center',text=random1,fill='black',font="Arial 45")
     canvas.create_text((3*canvas.data.width/4),(canvas.data.height/4),\
@@ -203,12 +211,13 @@ def drawNumerals(canvas,random1,random2,answerLeft,answerRight):
 def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
     # not efficient to build list, then check for usage or not
     #TODO move scoring logic outside this function
-    shapesAnswerRight =[Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
+    canvas.data.shapesAnswerRight =[Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
             ,((x*canvas.data.height)/4/(answerRight))+(2.0*canvas.data.height/3)) \
             for x in xrange(answerRight)]
-    shapesAnswerLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
+    canvas.data.shapesAnswerLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
             ,((x*canvas.data.height)/4/(answerLeft))+(2.0*canvas.data.height/3)) \
             for x in xrange(answerLeft)]
+    shapesAnswerLeft, shapesAnswerRight = canvas.data.shapesAnswerLeft, canvas.data.shapesAnswerRight
     if(canvas.data.adding == 1):
         shapesLeft = [Shape(((canvas.data.width/6)+((canvas.data.width/12)*(x%2)))\
                 ,((x*canvas.data.height)/4/(random1))+(canvas.data.height/10)) \
@@ -226,13 +235,21 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
 
     # threshold of score to unlock numerals
 #    if(canvas.data.user.score < 5):
+#        canvas.data.singleTop = True
+#        drawNumeral(canvas,canvas.data.width/4,canvas.data.height/4,len(shapesLeft))
+#        drawShapesList(canvas, shapesAnswerLeft)
+#        drawShapesList(canvas, shapesAnswerRight)
 #        #   generate 2 numbers
 #        #   one dot pattern
 #        #   match
-#        drawShapesList(canvas, shapesLeft)
+#    elif(canvas.data.user.score < 8):
+#        canvas.data.singleTop = False
+#        if(random.random() > .5):
+#            drawShapesList(canvas, shapesLeft)
+#        else:
+#            drawShapesList(canvas, shapesRight)
 #        drawNumeral(canvas,canvas.data.width/4,3*canvas.data.height/4,len(shapesLeft))
 #        drawNumeral(canvas,3*canvas.data.width/4,3*canvas.data.height/4,len(shapesRight))
-#    elif(canvas.data.user.score < 8):
 #        #TODO hybrid between pictures & numbers (answers)
 #        #TODO match numbers with pictures
 #        #   1. generate one number
@@ -241,16 +258,15 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
 #        #   can use same answer code
 #        #   2. generate 2 dot patterns
 #        #   3. match them
-#        drawNumeral(canvas,canvas.data.width/4,canvas.data.height/4,len(shapesLeft))
-#        drawShapesList(canvas, shapesAnswerLeft)
-#        drawShapesList(canvas, shapesAnswerRight)
     if(canvas.data.user.score < 10):
+        canvas.data.singleTop = False
         drawShapesList(canvas, shapesRight)
         drawShapesList(canvas, shapesLeft)
         drawShapesList(canvas, shapesAnswerLeft)
         drawShapesList(canvas, shapesAnswerRight)
         canvas.data.operator.draw(canvas)
     elif(canvas.data.user.score < 15):
+        canvas.data.singleTop = False
         random1 = random.random()
         if(random1 >= .5):
             drawShapesList(canvas, shapesRight)
