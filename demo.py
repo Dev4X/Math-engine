@@ -72,7 +72,6 @@ def checkAnswer(canvas, side):
     row = len(canvas.data.shapesLeft)
     col = len(canvas.data.shapesRight)
     if(canvas.data.singleTop == True):
-        print canvas.data.answerSide
         if(len(canvas.data.shapesLeft) == len(canvas.data.shapesAnswerLeft)):
             canvas.data.answerSide = "left"
         else:
@@ -147,7 +146,9 @@ def run():
     root.mainloop()
 
 def checkAdditionOrSubtraction(canvas, random1, random2):
-    if(canvas.data.adding == 1):
+    if(canvas.data.singleTop == True):
+        answer = random1
+    elif(canvas.data.adding == 1):
         canvas.data.operator = Plus(canvas)
         answer = random1 + random2
     else:
@@ -171,9 +172,14 @@ def generateRandoms(canvas):
     random3 = random.random()
 # 7.) Generate answer, display right answer as well as one wrong answer
     answer, canvas = checkAdditionOrSubtraction(canvas, random1, random2)
-    nonAnswer = random.randint(0,(2*n)-1)
-    while(nonAnswer == answer):
+    if(canvas.data.singleTop == True):
+        nonAnswer = random.randint(0,n-1)
+        while(nonAnswer == answer):
+            nonAnswer = random.randint(0,n-1)
+    else:
         nonAnswer = random.randint(0,(2*n)-1)
+        while(nonAnswer == answer):
+            nonAnswer = random.randint(0,(2*n)-1)
     return random1, random2, answer, nonAnswer, random3
 
 def randomAssign(canvas):
@@ -232,39 +238,18 @@ def buildShapesList(canvas,random1,random2,answer,answerLeft,answerRight):
         shapesRight = [Shape((2.0*canvas.data.width/(3.0)+((canvas.data.width/12)*(x%2)))\
                 ,((x*canvas.data.height)/4/(min(random2,random1)))+(canvas.data.height/10)) \
                 for x in xrange(min(random2,random1))]
-
-    # threshold of score to unlock numerals
-#    if(canvas.data.user.score < 5):
-#        canvas.data.singleTop = True
-#        drawNumeral(canvas,canvas.data.width/4,canvas.data.height/4,len(shapesLeft))
-#        drawShapesList(canvas, shapesAnswerLeft)
-#        drawShapesList(canvas, shapesAnswerRight)
-#        #   generate 2 numbers
-#        #   one dot pattern
-#        #   match
-#    elif(canvas.data.user.score < 8):
-#        canvas.data.singleTop = False
-#        if(random.random() > .5):
-#            drawShapesList(canvas, shapesLeft)
-#        else:
-#            drawShapesList(canvas, shapesRight)
-#        drawNumeral(canvas,canvas.data.width/4,3*canvas.data.height/4,len(shapesLeft))
-#        drawNumeral(canvas,3*canvas.data.width/4,3*canvas.data.height/4,len(shapesRight))
-#        #TODO hybrid between pictures & numbers (answers)
-#        #TODO match numbers with pictures
-#        #   1. generate one number
-#        #   do not draw operator
-#        #   instead draw in operator's place
-#        #   can use same answer code
-#        #   2. generate 2 dot patterns
-#        #   3. match them
-    if(canvas.data.user.score < 10):
-        canvas.data.singleTop = False
-        drawShapesList(canvas, shapesRight)
-        drawShapesList(canvas, shapesLeft)
+    if(canvas.data.user.score < 5):
+        # numeral to dots
+        canvas.data.singleTop = True
+        drawNumeral(canvas,canvas.data.width/4,canvas.data.height/4,len(shapesLeft))
         drawShapesList(canvas, shapesAnswerLeft)
         drawShapesList(canvas, shapesAnswerRight)
-        canvas.data.operator.draw(canvas)
+    elif(canvas.data.user.score < 10):
+        # dots to numerals
+        canvas.data.singleTop = True
+        drawShapesList(canvas, shapesLeft)
+        drawNumeral(canvas,canvas.data.width/4,3*canvas.data.height/4,len(shapesAnswerLeft))
+        drawNumeral(canvas,3*canvas.data.width/4,3*canvas.data.height/4,len(shapesAnswerRight))
     elif(canvas.data.user.score < 15):
         canvas.data.singleTop = False
         random1 = random.random()
